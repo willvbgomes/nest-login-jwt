@@ -22,4 +22,10 @@ export class AuthService {
 
     return await this.tokenService.generateTokens(userData);
   }
+
+  async updateTokens(userId: string) {
+    const user = await this.userService.findById(userId);
+
+    return await this.tokenService.generateTokens(user);
+  }
 }
