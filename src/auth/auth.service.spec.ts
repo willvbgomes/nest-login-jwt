@@ -17,6 +17,7 @@ const mockUser: User = {
 
 const mockUserService = {
   findByEmail: jest.fn(),
+  findById: jest.fn(),
 };
 
 const mockTokenService = {
@@ -87,6 +88,24 @@ describe('AuthService', () => {
       await expect(
         authService.signIn('test@example.com', 'wrongpassword'),
       ).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('updateTokens', () => {
+    it('should return new tokens if user is found', async () => {
+      const userId = 'random-uuid';
+      const tokens = {
+        accessToken: 'new-access-token',
+        refreshToken: 'new-refresh-token',
+      };
+      mockUserService.findById.mockResolvedValue(mockUser);
+      mockTokenService.generateTokens.mockResolvedValue(tokens);
+
+      const result = await authService.updateTokens(userId);
+
+      expect(mockUserService.findById).toHaveBeenCalledWith(userId);
+      expect(mockTokenService.generateTokens).toHaveBeenCalledWith(mockUser);
+      expect(result).toEqual(tokens);
     });
   });
 });
