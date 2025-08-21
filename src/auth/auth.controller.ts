@@ -25,7 +25,7 @@ export class AuthController {
       password,
     );
 
-    res.cookie('refreshToken', refreshToken, {
+    res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
       sameSite: 'strict',
       secure: process.env.NODE_ENV === 'production',
@@ -33,5 +33,12 @@ export class AuthController {
     });
 
     return { accessToken };
+  }
+
+  @Post('logout')
+  logout(@Res() res: Response) {
+    res.clearCookie('refresh_token');
+
+    return res.sendStatus(HttpStatus.OK);
   }
 }
