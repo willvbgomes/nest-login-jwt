@@ -3,6 +3,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
 import { Response } from 'express';
+import { HttpStatus } from '@nestjs/common';
 
 const mockAuthService = {
   signIn: jest.fn(),
@@ -42,8 +43,8 @@ describe('AuthController', () => {
     };
 
     const tokens = {
-      accessToken: 'accessToken',
-      refreshToken: 'refreshToken',
+      accessToken: 'access_token',
+      refreshToken: 'refresh_token',
     };
 
     const mockResponse = {
@@ -77,7 +78,7 @@ describe('AuthController', () => {
         await authController.signIn(signInDto, mockResponse);
 
         expect(mockResponse.cookie).toHaveBeenCalledWith(
-          'refreshToken',
+          'refresh_token',
           tokens.refreshToken,
           {
             httpOnly: true,
@@ -90,5 +91,19 @@ describe('AuthController', () => {
         process.env.NODE_ENV = originalNodeEnv;
       },
     );
+  });
+
+  describe('logout', () => {
+    it('should clear the refresh_token cookie and send an OK status', () => {
+      const mockResponse = {
+        clearCookie: jest.fn(),
+        sendStatus: jest.fn(),
+      } as unknown as Response;
+
+      authController.logout(mockResponse);
+
+      expect(mockResponse.clearCookie).toHaveBeenCalledWith('refresh_token');
+      expect(mockResponse.sendStatus).toHaveBeenCalledWith(HttpStatus.OK);
+    });
   });
 });
