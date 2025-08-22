@@ -15,7 +15,7 @@ export class RefreshTokenGuard implements CanActivate {
     const token = request.cookies['refresh_token'];
 
     if (!token) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Token not found');
     }
 
     try {
@@ -23,7 +23,7 @@ export class RefreshTokenGuard implements CanActivate {
 
       request['user'] = payload;
     } catch {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Invalid token');
     }
 
     return true;
