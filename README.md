@@ -84,7 +84,7 @@ npm run start:dev
 Aplique as migrations do banco de dados conforme o arquivo `schema.prisma`:
 
 ```bash
-npx prisma migrate dev
+npm run migrate:dev
 ```
 
 Após rodar as migrations, será criado automaticamente um usuário para testes manuais nas rotas.
