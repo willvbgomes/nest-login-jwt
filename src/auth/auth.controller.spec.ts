@@ -78,32 +78,14 @@ describe('AuthController', () => {
       expect(result).toEqual({ accessToken: tokens.accessToken });
     });
 
-    it.each([
-      [true, 'production'],
-      [false, 'development'],
-      [false, 'test'],
-    ])(
-      'should set cookie with secure: %s when NODE_ENV is %s',
-      async (expectedSecure, nodeEnv) => {
-        const originalNodeEnv = process.env.NODE_ENV;
-        process.env.NODE_ENV = nodeEnv;
-
-        await authController.signIn(signInDto, mockResponse);
-
-        expect(mockResponse.cookie).toHaveBeenCalledWith(
-          'refresh_token',
-          tokens.refreshToken,
-          {
-            httpOnly: true,
-            sameSite: 'strict',
-            secure: expectedSecure,
-            path: '/api/auth',
-          },
-        );
-
-        process.env.NODE_ENV = originalNodeEnv;
-      },
-    );
+    it('should call the private setCookie method', async () => {
+      const setCookieSpy = jest.spyOn(authController as any, 'setCookie');
+      await authController.signIn(signInDto, mockResponse);
+      expect(setCookieSpy).toHaveBeenCalledWith(
+        mockResponse,
+        tokens.refreshToken,
+      );
+    });
   });
 
   describe('logout', () => {
@@ -116,7 +98,35 @@ describe('AuthController', () => {
       authController.logout(mockResponse);
 
       expect(mockResponse.clearCookie).toHaveBeenCalledWith('refresh_token');
-      expect(mockResponse.sendStatus).toHaveBeenCalledWith(HttpStatus.OK);
+      expect(mockResponse.sendStatus).toHaveBeenCalledWith(
+        HttpStatus.NO_CONTENT,
+      );
+    });
+  });
+
+  describe('getProfile', () => {
+    it('should return the user profile without iat and exp properties', () => {
+      const mockUserPayload = {
+        sub: 'random-uuid',
+        email: 'test@example.com',
+        iat: 1678886400,
+        exp: 1678890000,
+      };
+
+      const mockRequest: AuthenticatedRequest = {
+        user: mockUserPayload,
+      } as AuthenticatedRequest;
+
+      const expectedProfile = {
+        sub: 'random-uuid',
+        email: 'test@example.com',
+      };
+
+      const result = authController.getProfile(mockRequest);
+
+      expect(result).toEqual(expectedProfile);
+      expect(result).not.toHaveProperty('iat');
+      expect(result).not.toHaveProperty('exp');
     });
   });
 
@@ -149,21 +159,35 @@ describe('AuthController', () => {
       expect(result).toEqual({ accessToken: tokens.accessToken });
     });
 
+    it('should call the private setCookie method', async () => {
+      const setCookieSpy = jest.spyOn(authController as any, 'setCookie');
+      await authController.updateTokens(mockRequest, mockResponse);
+      expect(setCookieSpy).toHaveBeenCalledWith(
+        mockResponse,
+        tokens.refreshToken,
+      );
+    });
+  });
+
+  describe('setCookie (private method)', () => {
+    const refreshToken = 'any-refresh-token';
+    const mockResponse = { cookie: jest.fn() } as unknown as Response;
+
     it.each([
       [true, 'production'],
       [false, 'development'],
       [false, 'test'],
     ])(
       'should set cookie with secure: %s when NODE_ENV is %s',
-      async (expectedSecure, nodeEnv) => {
+      (expectedSecure, nodeEnv) => {
         const originalNodeEnv = process.env.NODE_ENV;
         process.env.NODE_ENV = nodeEnv;
 
-        await authController.updateTokens(mockRequest, mockResponse);
+        (authController as any).setCookie(mockResponse, refreshToken);
 
         expect(mockResponse.cookie).toHaveBeenCalledWith(
           'refresh_token',
-          tokens.refreshToken,
+          refreshToken,
           {
             httpOnly: true,
             sameSite: 'strict',
@@ -171,7 +195,6 @@ describe('AuthController', () => {
             path: '/api/auth',
           },
         );
-
         process.env.NODE_ENV = originalNodeEnv;
       },
     );
