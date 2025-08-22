@@ -4,6 +4,7 @@
 [Prisma Badge]: https://img.shields.io/badge/Prisma-2d3748?style=for-the-badge&logo=prisma&labelColor=000
 [Jest Badge]: https://img.shields.io/badge/Jest-c21325?style=for-the-badge&logo=jest&labelColor=000&logoColor=c21325
 [JWT Badge]: https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&labelColor=000
+[Docker Badge]: https://img.shields.io/badge/Docker-2496ed?style=for-the-badge&logo=docker&labelColor=000
 
 <h1 align="center" style="font-weight: bold;">API de Autenticação com JWT</h1>
 
@@ -15,6 +16,7 @@
 ![prisma][Prisma Badge]
 ![jest][Jest Badge]
 ![jwt][JWT Badge]
+![docker][Docker Badge]
 
 </div>
 
@@ -41,6 +43,7 @@ Esta é uma API de autenticação de usuários utilizando JSON Web Tokens (JWT).
 - **BcryptJS**
 - **Cookie-Parser**
 - **Class-Validator**
+- **Docker**
 
 ## :arrow_down: Instalação
 
@@ -48,6 +51,7 @@ Esta é uma API de autenticação de usuários utilizando JSON Web Tokens (JWT).
 
 - [Node.js](https://nodejs.org/en/download/current)
 - [Git](https://git-scm.com/downloads)
+- [Docker](https://www.docker.com/get-started) (Opcional)
 
 ### 1. Clone o repositório
 
@@ -71,15 +75,20 @@ PORT=
 CLIENT_URL=
 DATABASE_URL=
 JWT_SECRET=
+CLIENT_URL=
 ```
 
 ### 4. Rodando a API
 
-Para rodar a API em modo de desenvolvimento com recarregamento automático:
+#### 4.1 Utilizando o Docker
+
+Para rodar a API em um ambiente de containers Docker:
 
 ```bash
-npm run start:dev
+docker compose up -d
 ```
+
+#### 4.2 Sem utilizar o Docker
 
 Aplique as migrations do banco de dados conforme o arquivo `schema.prisma`:
 
@@ -87,7 +96,13 @@ Aplique as migrations do banco de dados conforme o arquivo `schema.prisma`:
 npm run migrate:dev
 ```
 
-Após rodar as migrations, será criado automaticamente um usuário para testes manuais nas rotas.
+Para rodar a API em modo de desenvolvimento com recarregamento automático:
+
+```bash
+npm run start:dev
+```
+
+> Após rodar as migrations (ou rodar a API via docker), será criado automaticamente um usuário para testes manuais nas rotas.
 
 ```bash
 # dados do usuário para testes manuais
