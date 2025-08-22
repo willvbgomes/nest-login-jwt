@@ -20,6 +20,15 @@ import { RefreshTokenGuard } from './guards/refresh-token.guard';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  private setCookie(res: Response, refreshToken: string) {
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/api/auth',
+    });
+  }
+
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async signIn(
@@ -31,12 +40,7 @@ export class AuthController {
       password,
     );
 
-    res.cookie('refresh_token', refreshToken, {
-      httpOnly: true,
-      sameSite: 'strict',
-      secure: process.env.NODE_ENV === 'production',
-      path: '/api/auth',
-    });
+    this.setCookie(res, refreshToken);
 
     return { accessToken };
   }
@@ -45,7 +49,7 @@ export class AuthController {
   logout(@Res() res: Response) {
     res.clearCookie('refresh_token');
 
-    return res.sendStatus(HttpStatus.OK);
+    return res.sendStatus(HttpStatus.NO_CONTENT);
   }
 
   @UseGuards(AccessTokenGuard)
@@ -66,12 +70,7 @@ export class AuthController {
     const { accessToken, refreshToken } =
       await this.authService.updateTokens(userId);
 
-    res.cookie('refresh_token', refreshToken, {
-      httpOnly: true,
-      sameSite: 'strict',
-      secure: process.env.NODE_ENV === 'production',
-      path: '/api/auth',
-    });
+    this.setCookie(res, refreshToken);
 
     return { accessToken };
   }
