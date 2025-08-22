@@ -97,7 +97,9 @@ describe('AuthController', () => {
 
       authController.logout(mockResponse);
 
-      expect(mockResponse.clearCookie).toHaveBeenCalledWith('refresh_token');
+      expect(mockResponse.clearCookie).toHaveBeenCalledWith('refresh_token', {
+        path: '/api/auth',
+      });
       expect(mockResponse.sendStatus).toHaveBeenCalledWith(
         HttpStatus.NO_CONTENT,
       );
