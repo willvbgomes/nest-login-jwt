@@ -9,11 +9,12 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+import { Response } from 'express';
+import { AuthenticatedRequest } from 'src/types/authenticated-request';
 import { SignInDto } from './dto/sign-in.dto';
 import { AuthService } from './auth.service';
-import { Response } from 'express';
 import { AccessTokenGuard } from './guards/access-token.guard';
-import { AuthorizedRequest } from 'src/types/authorized-request';
+import { RefreshTokenGuard } from './guards/refresh-token.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -49,9 +50,29 @@ export class AuthController {
 
   @UseGuards(AccessTokenGuard)
   @Get('profile')
-  getProfile(@Req() req: AuthorizedRequest) {
+  getProfile(@Req() req: AuthenticatedRequest) {
     const { iat, exp, ...user } = req.user!;
 
     return user;
+  }
+
+  @UseGuards(RefreshTokenGuard)
+  @Post('refresh')
+  async updateTokens(
+    @Req() req: AuthenticatedRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const userId = req.user!.sub;
+    const { accessToken, refreshToken } =
+      await this.authService.updateTokens(userId);
+
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/api/auth',
+    });
+
+    return { accessToken };
   }
 }
