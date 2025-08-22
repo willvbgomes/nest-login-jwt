@@ -1,6 +1,6 @@
 import { Request } from 'express';
 
-export type AuthorizedRequest = Request & {
+export type AuthenticatedRequest = Request & {
   user?: {
     sub: string;
     email: string;
